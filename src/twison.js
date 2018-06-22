@@ -80,7 +80,7 @@ var Twison = {
           });
         });
       } else if (matches[1] === "go-to") {
-        action.value = matches[2];
+        action.value = matches[2].replace(/\"/g, "");
       }
 
       actions.push(action);
