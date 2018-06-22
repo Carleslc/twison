@@ -1,9 +1,13 @@
 var Twison = {
   extractLinksFromText: function(text) {
-    var links = text.match(/\[\[.+?\]\]/g)
+    var links = text.match(/\[\[.+?\]\]/g);
+
     if (links) {
-      return links.map(function(link) {
+      var links = links.map(function(link) {
         var differentName = link.match(/\[\[(.*?)\-\&gt;(.*?)\]\]/);
+
+        text = text.replace(link, '');
+
         if (differentName) {
           // [[name->link]]
           return {
@@ -12,25 +16,110 @@ var Twison = {
           };
         } else {
           // [[link]]
-          link = link.substring(2, link.length-2)
+          link = link.substring(2, link.length-2);
           return {
             name: link,
             link: link
           }
         }
       });
+
+      return {
+        links: links,
+        text: text
+      }
     }
+  },
+
+  extractStatementsFromText: function(text) {
+    var statementRegex = /\(if: *([^ ]+) *(is) *([^ ])\)\[(\([^)]+\))\]/gm,
+        statements = [],
+        newText = text,
+        matches;
+
+    while (matches = statementRegex.exec(text)) {
+      statements.push({
+        variable: matches[1],
+        operator: matches[2],
+        operand: matches[3],
+        actions: Twison.extractActions(matches[4]).actions
+      });
+
+      newText = newText.replace(matches[0], '');
+    }
+
+    return {
+    	text: newText,
+    	statements: statements
+    };
+  },
+
+  extractActions: function(text, shouldReplaceText) {
+    var actionRegex = /\(([^ :]+) *\: *([^)]*)\)/g,
+        setRegex = /([^ ]+) *(to) *([^\n]*)/,
+        actions = [],
+        newText = text,
+        matches,
+        action,
+        values;
+
+    while (matches = actionRegex.exec(text)) {
+      action = {
+        name: matches[1]
+      };
+
+      if (matches[1] === "set") {
+        values = matches[2].split(',');
+        action.values = [];
+        values.forEach(function(value) {
+          var setMatch = value.match(setRegex);
+          action.values.push({
+            variable: setMatch[1],
+            operator: setMatch[2],
+            operands: setMatch[3].split(' ')
+          });
+        });
+      } else if (matches[1] === "go-to") {
+        action.value = matches[2];
+      }
+
+      actions.push(action);
+
+      if (shouldReplaceText) {
+        newText = newText.replace(matches[0], '');
+      }
+    }
+
+    return {
+      actions: actions,
+      text: newText
+    };
   },
 
   convertPassage: function(passage) {
   	var dict = {text: passage.innerHTML};
 
-    var links = Twison.extractLinksFromText(dict.text);
-    if (links) {
-      dict.links = links;
+    var result = Twison.extractLinksFromText(dict.text);
+    if (result) {
+      dict.links = result.links;
+      dict.text = result.text;
     }
 
-    ["name", "pid", "position", "tags"].forEach(function(attr) {
+    result = Twison.extractStatementsFromText(dict.text);
+    if (result) {
+    	dict.text = result.text;
+    	dict.statements = result.statements;
+    }
+
+    result = Twison.extractActions(dict.text, true);
+    if (result) {
+    	dict.text = result.text;
+    	dict.actions = result.actions;
+    }
+
+    dict.text = dict.text.replace(/\n\s*\n/g, '\n');
+
+    ["name", "pid", "tags"].forEach(function(attr) {
       var value = passage.attributes[attr].value;
       if (value) {
         dict[attr] = value;
@@ -50,7 +139,7 @@ var Twison = {
     }
 
     return dict;
-	},
+  },
 
   convertStory: function(story) {
     var passages = story.getElementsByTagName("tw-passagedata");
