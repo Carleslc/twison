@@ -32,17 +32,44 @@ var Twison = {
   },
 
   extractStatementsFromText: function(text) {
-    var statementRegex = /\(if: *([^ ]+) *(is) *([^ ])\)\[(\([^)]+\))\]/gm,
+    var statementRegex = /\((if): *([^)]*)\) *\[(\([^)]*\))\](?:\n\((else):\) *\[(\([^)]*\))\]){0,1}/gm,
         statements = [],
         newText = text,
-        matches;
+        matches,
+        _if,
+        _else = null;
+
+    var extractConditions = function(text) {
+      var result = [],
+          conditions = text.split('and');
+
+      conditions.forEach(function(condition) {
+        var variables = condition.split(' ');
+        result.push({
+          variable: variables[0],
+          operator: variables[1],
+          operand: variables[2]
+        });
+      });
+
+      return result;
+    };
 
     while (matches = statementRegex.exec(text)) {
+      _if = {
+        conditions: extractConditions(matches[2]),
+        actions: Twison.extractActions(matches[3]).actions
+      };
+
+      if (matches[5]) {
+        _else = {
+          actions: Twison.extractActions(matches[5]).actions
+        }
+      }
+
       statements.push({
-        variable: matches[1],
-        operator: matches[2],
-        operand: matches[3],
-        actions: Twison.extractActions(matches[4]).actions
+        'if': _if,
+        'else': _else
       });
 
       newText = newText.replace(matches[0], '');
@@ -61,7 +88,8 @@ var Twison = {
         newText = text,
         matches,
         action,
-        values;
+        values,
+        _values;
 
     while (matches = actionRegex.exec(text)) {
       action = {
@@ -69,15 +97,28 @@ var Twison = {
       };
 
       if (matches[1] === "set") {
-        values = matches[2].split(',');
+        values = [];
+        _values = matches[2].split(',');
         action.values = [];
+
+        _values.forEach(function(value) {
+          var res = value.trim();
+          if (res.length) {
+            values.push(res);
+          }
+        });
+
         values.forEach(function(value) {
           var setMatch = value.match(setRegex);
-          action.values.push({
-            variable: setMatch[1],
-            operator: setMatch[2],
-            operands: setMatch[3].split(' ')
-          });
+          if (setMatch) {
+            action.values.push({
+              variable: setMatch[1],
+              operator: setMatch[2],
+              operands: setMatch[3].split(' ')
+            });
+          } else {
+            console.error('err', value);
+          }
         });
       } else if (matches[1] === "go-to") {
         action.value = matches[2].replace(/\"/g, "");
