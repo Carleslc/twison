@@ -44,7 +44,7 @@ var Twison = {
           conditions = text.split('and');
 
       conditions.forEach(function(condition) {
-        var variables = condition.split(' ');
+        var variables = condition.trim().split(' ');
         result.push({
           variable: variables[0],
           operator: variables[1],
