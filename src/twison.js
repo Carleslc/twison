@@ -1,10 +1,14 @@
 var Twison = {
   extractLinksFromText: function(text) {
-    var links = text.match(/\[\[.+?\]\]/g);
+    var links = text.match(/\[\[.+?\]\]( *{{ *([\d]+) *}})*/g);
 
     if (links) {
       var links = links.map(function(link) {
-        var differentName = link.match(/\[\[(.*?)\-\&gt;(.*?)\]\]/);
+        var differentName = link.match(/\[\[(.*?)\-\&gt;(.*?)\]\](?: *{{ *([\d]+) *}})*/);
+
+        if (link.indexOf('{') != -1) {
+          console.log(345);
+        }
 
         text = text.replace(link, '');
 
@@ -12,7 +16,8 @@ var Twison = {
           // [[name->link]]
           return {
             name: differentName[1],
-            link: differentName[2]
+            link: differentName[2],
+            timeout: differentName[3]
           };
         } else {
           // [[link]]
