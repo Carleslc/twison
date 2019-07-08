@@ -1,22 +1,24 @@
 var Twison = {
   extractLinksFromText: function(text) {
-    var links = text.match(/\[\[.+?\]\]( *{{ *([\d]+) *}})*/g);
+    var links = text.match(/\[\[.+?\]\]/g)
 
     if (links) {
       var links = links.map(function(link) {
-        var differentName = link.match(/\[\[(.*?)(\||\-\&gt;|\&lt;\-)(.*?)\]\](?: *{{ *([\d]+) *}})*/);
-
-        text = text.replace(link, '');
+        var differentName = link.match(/\[\[(.*?)(\||\-\&gt;|\&lt;\-)(.*?)\]\]*/);
 
         if (differentName) {
           // [[name->link]] or [[name|link]]
           passageName = differentName[1]
           passageLink = differentName[3]
+
           if (differentName[2] === "&lt;-") {
             // [[link<-name]]
-            passageLink = differentName[1]
             passageName = differentName[3]
+            passageLink = differentName[1]
           }
+
+          text = text.replace(link, passageName);
+
           return {
             name: passageName,
             link: passageLink,
@@ -24,10 +26,11 @@ var Twison = {
           };
         } else {
           // [[link]]
-          link = link.substring(2, link.length - 2);
+          stripLink = link.substring(2, link.length - 2);
+          text = text.replace(link, stripLink);
           return {
-            name: link,
-            link: link
+            name: stripLink,
+            link: stripLink
           }
         }
       });
@@ -40,7 +43,7 @@ var Twison = {
   },
 
   extractStatementsFromText: function(text) {
-    var statementRegex = /\((if): *([^)]*)\) *\[(\([^)]*\))\](?:\n\((else):\) *\[(\([^)]*\))\]){0,1}/gm,
+    var statementRegex = /\((if): *([^)]*)\) *\[(\([^)]*\))\](?:\n\((else):\) *\[(\([^)]*\))\]){0,1}/gmi,
       statements = [],
       newText = text,
       matches,
@@ -90,8 +93,8 @@ var Twison = {
   },
 
   extractActions: function(text, shouldReplaceText) {
-    var actionRegex = /\(([^ :]+) *\: *([^)]*)\)/g,
-      setRegex = /([^ ]+) *(to) *([^\n]*)/,
+    var actionRegex = /\(([^ :]+) *\: *([^)]*)\)/gi,
+      setRegex = /([^ ]+) *(to) *([^\n]*)/i,
       actions = [],
       newText = text,
       matches,
@@ -148,6 +151,7 @@ var Twison = {
   convertPassage: function(passage) {
     var dict = { text: passage.innerHTML };
 
+    // handle passage links
     var result = Twison.extractLinksFromText(dict.text);
     if (result) {
       dict.links = result.links;
@@ -166,9 +170,15 @@ var Twison = {
       dict.actions = result.actions;
     }
 
-    dict.text = dict.text.replace(/\n\s*\n/g, '\n');
+    // process text
+    dict.text = dict.text.replace(/&lt;[^>]*&gt;/g, ''); // remove HTML tags
+    dict.text = dict.text.replace(/\[(.*?)\]|[\[\]]|\\[^n]/g, ''); // remove actions
+    dict.text = dict.text.replace(/\n\s*\n/g, '\n').replace(/^[\s\n]+|[\s\n]+$/g, ''); // trim blanks
 
-    ["name", "pid", "tags"].forEach(function(attr) {
+    console.log(dict.text);
+
+    // extract these tags from the passage data
+    ["name", "pid", "position", "tags"].forEach(function(attr) {
       var value = passage.attributes[attr].value;
       if (value) {
         dict[attr] = value;
@@ -192,12 +202,15 @@ var Twison = {
 
   convertStory: function(story) {
     var passages = story.getElementsByTagName("tw-passagedata");
+
+    // convert each passage
     var convertedPassages = Array.prototype.slice.call(passages).map(Twison.convertPassage);
 
     var dict = {
       passages: convertedPassages
     };
 
+    // extract global story info
     ["name", "startnode", "creator", "creator-version", "ifid"].forEach(function(attr) {
       var value = story.attributes[attr].value;
       if (value) {
@@ -211,6 +224,7 @@ var Twison = {
       pidsByName[passage.name] = passage.pid;
     });
 
+    // Search thru all other passages for matching pid to each link
     dict.passages.forEach(function(passage) {
       if (!passage.links) return;
       passage.links.forEach(function(link) {
@@ -224,6 +238,7 @@ var Twison = {
     return dict;
   },
 
+  // entry point, called from build.js
   convert: function() {
     var storyData = document.getElementsByTagName("tw-storydata")[0];
     var json = JSON.stringify(Twison.convertStory(storyData), null, 2);
