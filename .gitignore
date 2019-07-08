@@ -1,3 +1,5 @@
 node_modules
 Sample.html
 /.idea
+
+.DS_Store

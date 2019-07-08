@@ -4,24 +4,27 @@ var Twison = {
 
     if (links) {
       var links = links.map(function(link) {
-        var differentName = link.match(/\[\[(.*?)\-\&gt;(.*?)\]\](?: *{{ *([\d]+) *}})*/);
-
-        if (link.indexOf('{') != -1) {
-          console.log(345);
-        }
+        var differentName = link.match(/\[\[(.*?)(\||\-\&gt;|\&lt;\-)(.*?)\]\](?: *{{ *([\d]+) *}})*/);
 
         text = text.replace(link, '');
 
         if (differentName) {
-          // [[name->link]]
+          // [[name->link]] or [[name|link]]
+          passageName = differentName[1]
+          passageLink = differentName[3]
+          if (differentName[2] === "&lt;-") {
+            // [[link<-name]]
+            passageLink = differentName[1]
+            passageName = differentName[3]
+          }
           return {
-            name: differentName[1],
-            link: differentName[2],
-            timeout: differentName[3]
+            name: passageName,
+            link: passageLink,
+            timeout: differentName[4]
           };
         } else {
           // [[link]]
-          link = link.substring(2, link.length-2);
+          link = link.substring(2, link.length - 2);
           return {
             name: link,
             link: link
@@ -38,15 +41,15 @@ var Twison = {
 
   extractStatementsFromText: function(text) {
     var statementRegex = /\((if): *([^)]*)\) *\[(\([^)]*\))\](?:\n\((else):\) *\[(\([^)]*\))\]){0,1}/gm,
-        statements = [],
-        newText = text,
-        matches,
-        _if,
-        _else = null;
+      statements = [],
+      newText = text,
+      matches,
+      _if,
+      _else = null;
 
     var extractConditions = function(text) {
       var result = [],
-          conditions = text.split('and');
+        conditions = text.split('and');
 
       conditions.forEach(function(condition) {
         var variables = condition.trim().split(' ');
@@ -81,20 +84,20 @@ var Twison = {
     }
 
     return {
-    	text: newText,
-    	statements: statements
+      text: newText,
+      statements: statements
     };
   },
 
   extractActions: function(text, shouldReplaceText) {
     var actionRegex = /\(([^ :]+) *\: *([^)]*)\)/g,
-        setRegex = /([^ ]+) *(to) *([^\n]*)/,
-        actions = [],
-        newText = text,
-        matches,
-        action,
-        values,
-        _values;
+      setRegex = /([^ ]+) *(to) *([^\n]*)/,
+      actions = [],
+      newText = text,
+      matches,
+      action,
+      values,
+      _values;
 
     while (matches = actionRegex.exec(text)) {
       action = {
@@ -143,7 +146,7 @@ var Twison = {
   },
 
   convertPassage: function(passage) {
-  	var dict = {text: passage.innerHTML};
+    var dict = { text: passage.innerHTML };
 
     var result = Twison.extractLinksFromText(dict.text);
     if (result) {
@@ -153,14 +156,14 @@ var Twison = {
 
     result = Twison.extractStatementsFromText(dict.text);
     if (result) {
-    	dict.text = result.text;
-    	dict.statements = result.statements;
+      dict.text = result.text;
+      dict.statements = result.statements;
     }
 
     result = Twison.extractActions(dict.text, true);
     if (result) {
-    	dict.text = result.text;
-    	dict.actions = result.actions;
+      dict.text = result.text;
+      dict.actions = result.actions;
     }
 
     dict.text = dict.text.replace(/\n\s*\n/g, '\n');
@@ -172,7 +175,7 @@ var Twison = {
       }
     });
 
-    if(dict.position) {
+    if (dict.position) {
       var position = dict.position.split(',')
       dict.position = {
         x: position[0],
