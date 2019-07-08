@@ -1,79 +1,115 @@
 # Twison
 
-[![Build Status](https://travis-ci.org/lazerwalker/twison.svg?branch=master)](https://travis-ci.org/lazerwalker/twison)
+[![Build Status](https://travis-ci.org/Carleslc/twison.svg?branch=master)](https://travis-ci.org/Carleslc/twison)
 
 Twison is a story format for [Twine 2](http://twinery.org/2) that simply exports to JSON.
 
-It is inspired by [Entweedle](http://www.maximumverbosity.net/twine/Entweedle/) as a model for how Twine 2 story formats work.
+It is inspired by [Entweedle](http://www.maximumverbosity.net/twine/Entweedle/) as a model for how Twine 2 story formats work and [Harlowe](https://twine2.neocities.org/) ([src](https://bitbucket.org/_L_/harlowe/src/default/)) format to parse links and actions.
 
 ## Installation
 
-From the Twine 2 story select screen, add a story format, and point it to the url `https://lazerwalker.com/twison/format.js`.
+From the Twine 2 story select screen, add a story format, and point it to the url `https://readteractive.netlify.com/format.js`.
 
 From within your story, set the story format to Twison. Choosing "Play" will now give you a JSON file.
 
+## Example
 
-## Output
+This is an example output for the example story at [test/fixture.html](https://github.com/Carleslc/twison/blob/master/test/fixture.html).
 
-Here's an example of its output:
+### Output
 
 ```json
 {
   "passages": [
     {
-      "text": "This is a passage that goes to [[No Where->nowhere]].\n\nor is to [[somewhere]]?\n\nHere's a [[third link]]\n\nClick [[me->someNode]]",
+      "text": "This is the first node.\nThere is a second node, and a third node.",
       "links": [
         {
-          "name": "No Where",
-          "link": "nowhere",
-          "pid": "3"
-        },
-        {
-          "name": "somewhere",
-          "link": "somewhere",
+          "name": "second",
+          "link": "second",
           "pid": "2"
         },
         {
-          "name": "third link",
-          "link": "third link",
-          "pid": "4"
-        },
-        {
-          "name": "me",
-          "link": "someNode",
-          "pid": "5"
+          "name": "third",
+          "link": "another",
+          "pid": "3"
         }
       ],
-      "name": "First passage",
+      "statements": [],
+      "actions": [],
+      "name": "Start",
       "pid": "1",
       "position": {
-        "x": "553.3333333333334",
-        "y": "38.333333333333336"
+        "x": "511",
+        "y": "47"
       },
       "tags": [
-        "tag",
-        "second-tag"
+        "tag1",
+        "tag2"
       ]
     },
     {
-      "text": "You found me!",
-      "name": "somewhere",
+      "text": "Would you rather go to another?",
+      "links": [
+        {
+          "name": "another",
+          "link": "another",
+          "pid": "3"
+        }
+      ],
+      "statements": [],
+      "actions": [],
+      "name": "second",
       "pid": "2",
       "position": {
-        "x": "893.3333333333334",
-        "y": "241.66666666666669"
+        "x": "328",
+        "y": "197"
+      }
+    },
+    {
+      "text": "Would you rather go to second?",
+      "links": [
+        {
+          "name": "second",
+          "link": "second",
+          "pid": "2"
+        }
+      ],
+      "statements": [],
+      "actions": [],
+      "name": "another",
+      "pid": "3",
+      "position": {
+        "x": "652",
+        "y": "195"
+      }
+    },
+    {
+      "text": "I am unattached, and have a link that is broken.",
+      "links": [
+        {
+          "name": "broken",
+          "link": "broken",
+          "broken": true
+        }
+      ],
+      "statements": [],
+      "actions": [],
+      "name": "unattached",
+      "pid": "4",
+      "position": {
+        "x": "893",
+        "y": "116"
       }
     }
   ],
-  "name": "Test",
+  "name": "Twison-Test",
   "startnode": "1",
   "creator": "Twine",
-  "creator-version": "2.0.9",
-  "ifid": "1881C2BE-C764-4D33-ACC6-7BAEBB6D770A"
+  "creator-version": "2.3.2",
+  "ifid": "94716246-402E-4E05-914B-532937C5EE88"
 }
 ```
-
-It aims to maintain all fields provided in Twine's internal XML data, while augmenting with other information where possible. For example, it doesn't touch a node's text contents, but it does parse links to provide a dictionary of links and destination nodes.
 
 
 ## Interoperating with other systems
