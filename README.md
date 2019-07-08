@@ -1,7 +1,5 @@
 # Twison
 
-[![Build Status](https://travis-ci.org/Carleslc/twison.svg?branch=master)](https://travis-ci.org/Carleslc/twison)
-
 Twison is a story format for [Twine 2](http://twinery.org/2) that simply exports to JSON.
 
 It is inspired by [Entweedle](http://www.maximumverbosity.net/twine/Entweedle/) as a model for how Twine 2 story formats work and [Harlowe](https://twine2.neocities.org/) ([src](https://bitbucket.org/_L_/harlowe/src/default/)) format to parse links and actions.
