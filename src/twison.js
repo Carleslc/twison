@@ -175,8 +175,6 @@ var Twison = {
     dict.text = dict.text.replace(/\[(.*?)\]|[\[\]]|\\[^n]/g, ''); // remove actions
     dict.text = dict.text.replace(/\n\s*\n/g, '\n').replace(/^[\s\n]+|[\s\n]+$/g, ''); // trim blanks
 
-    console.log(dict.text);
-
     // extract these tags from the passage data
     ["name", "pid", "position", "tags"].forEach(function(attr) {
       var value = passage.attributes[attr].value;

@@ -1,7 +1,7 @@
 {
   "passages": [
     {
-      "text": "This is the first node.\nThere is a [[second]] node, and a [[third-&gt;another]] node.",
+      "text": "This is the first node.\nThere is a second node, and a third node.",
       "links": [
         {
           "name": "second",
@@ -14,6 +14,8 @@
           "pid": "3"
         }
       ],
+      "statements": [],
+      "actions": [],
       "name": "Start",
       "pid": "1",
       "position": {
@@ -26,7 +28,7 @@
       ]
     },
     {
-      "text": "Would you rather go to [[another]]?",
+      "text": "Would you rather go to another?",
       "links": [
         {
           "name": "another",
@@ -34,6 +36,8 @@
           "pid": "3"
         }
       ],
+      "statements": [],
+      "actions": [],
       "name": "second",
       "pid": "2",
       "position": {
@@ -42,7 +46,7 @@
       }
     },
     {
-      "text": "Would you rather go to [[second]]?",
+      "text": "Would you rather go to second?",
       "links": [
         {
           "name": "second",
@@ -50,6 +54,8 @@
           "pid": "2"
         }
       ],
+      "statements": [],
+      "actions": [],
       "name": "another",
       "pid": "3",
       "position": {
@@ -58,7 +64,7 @@
       }
     },
     {
-      "text": "I am unattached, and have a link that is [[broken]].",
+      "text": "I am unattached, and have a link that is broken.",
       "links": [
         {
           "name": "broken",
@@ -66,6 +72,8 @@
           "broken": true
         }
       ],
+      "statements": [],
+      "actions": [],
       "name": "unattached",
       "pid": "4",
       "position": {
