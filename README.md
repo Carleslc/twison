@@ -8,7 +8,7 @@ It is inspired by [Entweedle](http://www.maximumverbosity.net/twine/Entweedle/) 
 
 ## Installation
 
-From the Twine 2 story select screen, add a story format, and point it to the url `https://readteractive.netlify.com/format.js`.
+From the Twine 2 story select screen, add a story format, and point it to the url `https://carleslc.me/twison/dist/format.js`.
 
 From within your story, set the story format to Twison. Choosing "Play" will now give you a JSON file.
 
